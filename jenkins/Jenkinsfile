@@ -1,1 +1,83 @@
+pipeline {
+    agent any
 
+    parameters {
+        // cloud_id и folder_id уже есть в defaults, можно не трогать
+        string(name: 'CLOUD_ID',     defaultValue: 'b1gp31d2a5js0d286632', description: 'Yandex Cloud ID')
+        string(name: 'FOLDER_ID',    defaultValue: 'b1gslb67oosr9ejfib5i', description: 'Yandex Folder ID')
+        string(name: 'ZONE',         defaultValue: 'ru-central1-d',        description: 'Zone')
+        string(name: 'PROJECT_NAME', defaultValue: 'yc-lab5',              description: 'Project name')
+        string(name: 'IMAGE_ID',     defaultValue: 'fd89nl7rpq3plgh1dmtu', description: 'Image ID (Ubuntu)')
+        string(name: 'SSH_PUB_PATH', defaultValue: '~/.ssh/id_rsa_yc.pub', description: 'SSH public key path')
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/1vmc1/infra-yc-lab5.git'
+            }
+        }
+
+        stage('Terraform Init & Apply') {
+            steps {
+                withCredentials([string(credentialsId: 'yc-api-token', variable: 'YC_TOKEN')]) {
+                    dir('terraform') {
+                        sh '''
+                            set -eux
+
+                            export TF_VAR_cloud_id="${CLOUD_ID}"
+                            export TF_VAR_folder_id="${FOLDER_ID}"
+                            export TF_VAR_zone="${ZONE}"
+                            export TF_VAR_project_name="${PROJECT_NAME}"
+                            export TF_VAR_image_id="${IMAGE_ID}"
+                            export TF_VAR_ssh_public_key="${SSH_PUB_PATH}"
+                            export TF_VAR_yc_token="${YC_TOKEN}"
+
+                            terraform init
+                            terraform apply -auto-approve
+
+                            terraform output -raw vm_external_ip > ../ansible/vm_ip.txt
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Update Ansible inventory') {
+            steps {
+                dir('ansible') {
+                    sh '''
+                        VM_IP=$(cat vm_ip.txt)
+                        echo "[webservers]" > inventory.ini
+                        echo "vm ansible_host=${VM_IP} ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/id_rsa_yc" >> inventory.ini
+                        cat inventory.ini
+                    '''
+                }
+            }
+        }
+
+        stage('Ansible Configure') {
+            steps {
+                dir('ansible') {
+                    sh '''
+                        ansible-playbook -i inventory.ini playbook.yml
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '=== Deployment successful! ==='
+            script {
+                def ip = readFile('ansible/vm_ip.txt').trim()
+                echo "VM External IP: ${ip}"
+            }
+        }
+        failure {
+            echo '=== Deployment failed! ==='
+        }
+    }
+}
