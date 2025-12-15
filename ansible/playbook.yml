@@ -1,1 +1,57 @@
+---
+- name: Configure application server for lab5
+  hosts: webservers
+  become: yes
 
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install base packages
+      apt:
+        name:
+          - git
+          - curl
+          - vim
+          - htop
+        state: present
+
+    - name: Install Java
+      apt:
+        name: openjdk-11-jdk
+        state: present
+
+    - name: Install Maven
+      apt:
+        name: maven
+        state: present
+
+    - name: Create application directory
+      file:
+        path: /opt/myapp
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+
+    - name: Deploy simple script
+      copy:
+        content: |
+          #!/bin/bash
+          echo "=== Lab5 Application Deployed ==="
+          echo "Java version:"
+          java -version
+          echo
+          echo "Maven version:"
+          mvn -version
+        dest: /opt/myapp/run.sh
+        mode: '0755'
+
+    - name: Run application script
+      shell: /opt/myapp/run.sh
+      register: app_output
+
+    - name: Show script output
+      debug:
+        var: app_output.stdout_lines
