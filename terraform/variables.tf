@@ -32,3 +32,8 @@ variable "ssh_public_key" {
   type        = string
   default     = "~/.ssh/id_rsa_yc.pub"
 }
+variable "service_account_key_file" {
+  type        = string
+  description = "Path to service account key file"
+  default     = "~/.yandex-cloud/key.json"
+}
