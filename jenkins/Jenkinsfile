@@ -20,30 +20,29 @@ pipeline {
         }
 
         stage('Terraform Init & Apply') {
-            steps {
-                withCredentials([string(credentialsId: 'yc-api-token', variable: 'YC_TOKEN')]) {
-                    dir('terraform') {
-                        sh '''
-                            set -eux
+    steps {
+        withCredentials([file(credentialsId: 'yc-service-account-key', variable: 'YC_SA_KEY_FILE')]) {
+            dir('terraform') {
+            sh '''
+            set -eux
 
-                            export TF_VAR_cloud_id="${CLOUD_ID}"
-                            export TF_VAR_folder_id="${FOLDER_ID}"
-                            export TF_VAR_zone="${ZONE}"
-                            export TF_VAR_project_name="${PROJECT_NAME}"
-                            export TF_VAR_image_id="${IMAGE_ID}"
-                            export TF_VAR_ssh_public_key="${SSH_PUB_PATH}"
-                            export TF_VAR_yc_token="${YC_TOKEN}"
+            export TF_VAR_cloud_id="${CLOUD_ID}"
+            export TF_VAR_folder_id="${FOLDER_ID}"
+            export TF_VAR_zone="${ZONE}"
+            export TF_VAR_project_name="${PROJECT_NAME}"
+            export TF_VAR_image_id="${IMAGE_ID}"
+            export TF_VAR_ssh_public_key="${SSH_PUB_PATH}"
+            export TF_VAR_service_account_key_file="${YC_SA_KEY_FILE}"
 
-                            terraform init
-                            terraform apply -auto-approve
+            terraform init
+            terraform apply -auto-approve
 
-                            terraform output -raw vm_external_ip > ../ansible/vm_ip.txt
-                        '''
-                    }
-                }
+            terraform output -raw vm_external_ip > ../ansible/vm_ip.txt
+            '''
             }
         }
-
+    }
+}
         stage('Update Ansible inventory') {
             steps {
                 dir('ansible') {
