@@ -28,8 +28,9 @@ variable "image_id" {
 }
 
 variable "ssh_public_key" {
-  type        = string
   description = "Path to SSH public key file"
+  type        = string
+  default     = "~/.ssh/id_rsa_yc.pub"
 }
 
 variable "yc_token" {
