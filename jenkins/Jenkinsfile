@@ -26,8 +26,7 @@ pipeline {
                 sh '''
                     set -eux
 
-                    export YC_SERVICE_ACCOUNT_KEY_FILE=${YC_KEY_FILE}
-
+                    export TF_VAR_service_account_key_file=${YC_KEY_FILE}
                     export TF_VAR_cloud_id="${CLOUD_ID}"
                     export TF_VAR_folder_id="${FOLDER_ID}"
                     export TF_VAR_zone="${ZONE}"
@@ -44,6 +43,7 @@ pipeline {
         }
     }
 }
+
 
         stage('Update Ansible inventory') {
             steps {
