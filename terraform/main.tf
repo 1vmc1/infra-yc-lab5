@@ -9,12 +9,11 @@ terraform {
   }
 }
 
-# ИСПРАВЛЕНО: Использование service_account_key_file вместо token
 provider "yandex" {
   service_account_key_file = var.service_account_key_file
-  cloud_id                 = var.cloud_id
-  folder_id                = var.folder_id
-  zone                     = var.zone
+  cloud_id  = var.cloud_id
+  folder_id = var.folder_id
+  zone      = var.zone
 }
 
 resource "yandex_vpc_network" "this" {
