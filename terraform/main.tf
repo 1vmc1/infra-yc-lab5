@@ -9,6 +9,7 @@ terraform {
   }
 }
 
+# ИСПРАВЛЕНО: Использование service_account_key_file вместо token
 provider "yandex" {
   service_account_key_file = var.service_account_key_file
   cloud_id                 = var.cloud_id
@@ -53,6 +54,9 @@ resource "yandex_compute_instance" "vm" {
   metadata = {
     ssh-keys = "ubuntu:${file(var.ssh_public_key)}"
   }
+
+  # ДОБАВЛЕНО: Явное указание на использование сервисного аккаунта (опционально)
+  # service_account_id = "ajes8tm7itqqr60helq"
 }
 
 output "vm_external_ip" {
