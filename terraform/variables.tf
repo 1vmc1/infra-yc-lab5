@@ -32,8 +32,3 @@ variable "ssh_public_key" {
   type        = string
   default     = "~/.ssh/id_rsa_yc.pub"
 }
-
-variable "yc_token" {
-  type        = string
-  description = "Yandex Cloud API token"
-}
