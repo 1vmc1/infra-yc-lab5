@@ -21,7 +21,7 @@ pipeline {
 
         stage('Terraform Init & Apply') {
     steps {
-        withCredentials([file(credentialsId: 'yc-service-account-key', variable: 'YC_SA_KEY_FILE')]) {
+        withCredentials([file(credentialsId: 'yc-sa-key', variable: 'YC_KEY_FILE')]) {
             dir('terraform') {
             sh '''
             set -eux
