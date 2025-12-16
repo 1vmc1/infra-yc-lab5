@@ -25,6 +25,7 @@ variable "project_name" {
 variable "image_id" {
   type        = string
   description = "ID образа в Yandex Cloud (например Ubuntu 22.04)"
+  default     = "fd89nl7rpq3plgh1dmtu"
 }
 
 variable "ssh_public_key" {
@@ -32,8 +33,11 @@ variable "ssh_public_key" {
   type        = string
   default     = "~/.ssh/id_rsa_yc.pub"
 }
+
+# ДОБАВЛЕНО: Определение переменной для service account key
 variable "service_account_key_file" {
   type        = string
   description = "Path to service account key file"
   default     = "~/.yandex-cloud/key.json"
+  sensitive   = true
 }
